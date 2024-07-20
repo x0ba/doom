@@ -1,7 +1,7 @@
 ;;; $DOOMDIR/config.el -*- lexical-binding: t; -*-
 
 (setq user-full-name "Daniel Xu"
-      user-mail-address "danielxu0307@gmail.com")
+      user-mail-address "danielxu0307@proton.me")
 
 ;; When I bring up Doom's scratch buffer with SPC x, it's often to play with
 ;; elisp or note something down (that isn't worth an entry in my notes). I can
@@ -14,10 +14,10 @@
 ;; let emacs use the gpg ssh socket
 (setenv "SSH_AUTH_SOCK" (concat (getenv "HOME") "/.gnupg/S.gpg-agent.ssh"))
 
-(setq doom-font (font-spec :family "SF Mono" :size 13)
+(setq doom-font (font-spec :family "Berkeley Mono" :size 13)
       doom-variable-pitch-font (font-spec :family "Atkinson Hyperlegible" :size 13)
       doom-symbol-font (font-spec :family "Symbols Nerd Font" :size 13)
-      doom-theme 'doom-vibrant)
+      doom-theme 'modus-vivendi)
 
 ;; Prevents some cases of Emacs flickering.
 (add-to-list 'default-frame-alist '(inhibit-double-buffering . t))
@@ -57,21 +57,6 @@
 ;; Hide the menu for as minimalistic a startup screen as possible.
 (setq +doom-dashboard-functions '(doom-dashboard-widget-banner))
 
-
-(after! mu4e
-  (setq sendmail-program (executable-find "msmtp")
-        send-mail-function #'smtpmail-send-it
-        message-sendmail-f-is-evil t
-        message-sendmail-extra-arguments '("--read-envelope-from")
-        message-send-mail-function #'message-send-mail-with-sendmail))
-
-(setq +mu4e-gmail-accounts '(("danielxu0307@gmail.com" . "/gmail")))
-
-
-(setq +mu4e-backend nil)
-(after! mu4e
-  (setq mu4e-get-mail-command (concat (executable-find "mbsync") " -a")
-        mu4e-update-interval 300))
 
 ;;
 ;;;; Org mode tweaks
@@ -129,21 +114,3 @@
   (setq mixed-pitch-set-height t)
   (set-face-attribute 'variable-pitch nil :height 1.2))
 
-(defun greedily-do-daemon-setup ()
-  (require 'org)
-  (when (require 'mu4e nil t)
-    (setq mu4e-confirm-quit t)
-    (setq +mu4e-lock-greedy t)
-    (setq +mu4e-lock-relaxed t)
-    (when (+mu4e-lock-available t)
-      (mu4e--start)))
-  (when (require 'elfeed nil t)
-    (run-at-time nil (* 8 60 60) #'elfeed-update)))
-
-(when (daemonp)
-  (add-hook 'emacs-startup-hook #'greedily-do-daemon-setup)
-  (add-hook! 'server-after-make-frame-hook
-    (unless (string-match-p "\\*draft\\|\\*stdin\\|emacs-everywhere" (buffer-name))
-      (switch-to-buffer +doom-dashboard-name))))
-
-(add-hook 'server-after-make-frame-hook (lambda () (select-frame-set-input-focus (selected-frame))))
