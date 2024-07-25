@@ -8,6 +8,12 @@
 ;; do both in `lisp-interaction-mode'.
 (setq doom-scratch-initial-major-mode 'lisp-interaction-mode)
 
+;; macos stuff
+;; Use Option as Super
+(setq mac-option-modifier 'super)
+;; Use Command as Meta
+(setq mac-command-modifier 'meta)
+
 ;; supress warnings, not errors
 (setq warning-suppress-types '((bytecomp)))
 
@@ -15,9 +21,9 @@
 (setenv "SSH_AUTH_SOCK" (concat (getenv "HOME") "/.gnupg/S.gpg-agent.ssh"))
 
 (setq doom-font (font-spec :family "Berkeley Mono" :size 13)
-      doom-variable-pitch-font (font-spec :family "Atkinson Hyperlegible" :size 13)
+      doom-variable-pitch-font (font-spec :family "Lora" :size 13)
       doom-symbol-font (font-spec :family "Symbols Nerd Font" :size 13)
-      doom-theme 'modus-vivendi)
+      doom-theme 'doom-gruvbox)
 
 ;; Prevents some cases of Emacs flickering.
 (add-to-list 'default-frame-alist '(inhibit-double-buffering . t))
@@ -45,10 +51,6 @@
 (after! lsp-ui
   (setq lsp-ui-sideline-enable nil  ; no more useful than flycheck
         lsp-ui-doc-enable nil))     ; redundant with K
-
-(use-package vterm
-  :config
-  (setq vterm-shell (or (getenv "SHELL") shell-file-name "/bin/bash")))
 
 
 (setq display-line-numbers-type 'relative)
@@ -113,4 +115,3 @@
   :config
   (setq mixed-pitch-set-height t)
   (set-face-attribute 'variable-pitch nil :height 1.2))
-
