@@ -13,6 +13,12 @@
 (setq mac-option-modifier 'super)
 ;; Use Command as Meta
 (setq mac-command-modifier 'meta)
+;; create a new frame when closing emacs
+(mac-pseudo-daemon-mode 1)
+
+;; Implicit /g flag on evil ex substitution, because I use the default behavior
+;; less often.
+(setq evil-ex-substitute-global t)
 
 ;; supress warnings, not errors
 (setq warning-suppress-types '((bytecomp)))
@@ -21,12 +27,23 @@
 (setenv "SSH_AUTH_SOCK" (concat (getenv "HOME") "/.gnupg/S.gpg-agent.ssh"))
 
 (setq doom-font (font-spec :family "Berkeley Mono" :size 13)
-      doom-variable-pitch-font (font-spec :family "Lora" :size 13)
+      doom-variable-pitch-font (font-spec :family "Inter" :size 13)
       doom-symbol-font (font-spec :family "Symbols Nerd Font" :size 13)
-      doom-theme 'doom-gruvbox)
+      doom-theme 'doom-vibrant)
 
 ;; Prevents some cases of Emacs flickering.
 (add-to-list 'default-frame-alist '(inhibit-double-buffering . t))
+
+;;; :tools magit
+(setq magit-repository-directories '(("~/code" . 2))
+      magit-save-repository-buffers nil
+      ;; Don't restore the wconf after quitting magit, it's jarring
+      magit-inhibit-save-previous-winconf t
+      evil-collection-magit-want-horizontal-movement t
+      magit-openpgp-default-signing-key "7062369036F842822CA109C2660DBDE129F4E1D9"
+      transient-values '((magit-rebase "--autosquash" "--autostash")
+                         (magit-pull "--rebase" "--autostash")
+                         (magit-revert "--autostash")))
 
 (after! corfu
   (setq corfu-auto nil))
@@ -59,59 +76,27 @@
 ;; Hide the menu for as minimalistic a startup screen as possible.
 (setq +doom-dashboard-functions '(doom-dashboard-widget-banner))
 
-
 ;;
 ;;;; Org mode tweaks
 (setq org-directory "~/org/")
 (setq org-agenda-files (directory-files-recursively "~/org" "\\.org$"))
 
-;; turn off line numbers in org mode
-(defun my/disable-line-numbers ()
-  (display-line-numbers-mode -1))
-(add-hook 'org-mode-hook #'my/disable-line-numbers)
 
-;; make org look a little nicer by making it use my variable-pitch font and
-;; changing some font sizes
 (after! org
-  (setq org-hide-emphasis-markers t)
-  (custom-set-faces!
-    '(org-document-title :height 1.2)
-    '(outline-1 :weight extra-bold :height 1.25)
-    '(outline-2 :weight bold :height 1.15)
-    '(outline-3 :weight bold :height 1.12)
-    '(outline-4 :weight semi-bold :height 1.09)
-    '(outline-5 :weight semi-bold :height 1.06)
-    '(outline-6 :weight semi-bold :height 1.03)
-    '(outline-8 :weight semi-bold)
-    '(outline-9 :weight semi-bold))
-  (setq org-agenda-deadline-faces
-        '((1.001 . error)
-          (1.0 . org-warning)
-          (0.5 . org-upcoming-deadline)
-          (0.0 . org-upcoming-distant-deadline)))
-  (setq org-ellipsis " ▾ "
-        org-hide-leading-stars t
-        org-priority-highest ?A
-        org-priority-lowest ?E
-        org-priority-faces
-        '((?A . 'nerd-icons-red)
-          (?B . 'nerd-icons-orange)
-          (?C . 'nerd-icons-yellow)
-          (?D . 'nerd-icons-green)
-          (?E . 'nerd-icons-blue)))
-  (setq org-src-fontify-natively t)
-  (setq org-fontify-quote-and-verse-blocks t)
-  (defun locally-defer-font-lock ()
-    "Set jit-lock defer and stealth, when buffer is over a certain size."
-    (when (> (buffer-size) 50000)
-      (setq-local jit-lock-defer-time 0.05
-                  jit-lock-stealth-time 1)))
-  (add-hook 'org-mode-hook #'locally-defer-font-lock)
-  (setq doom-themes-org-fontify-special-tags nil)
-  (add-hook 'org-mode-hook 'visual-line-mode))
-
-(use-package! mixed-pitch
-  :hook (org-mode . mixed-pitch-mode)
-  :config
-  (setq mixed-pitch-set-height t)
-  (set-face-attribute 'variable-pitch nil :height 1.2))
+  (setq org-startup-folded 'show2levels
+        org-ellipsis " [...] "
+        org-capture-templates
+        '(("t" "todo" entry (file+headline "todo.org" "Inbox")
+           "* [ ] %?\n%i\n%a"
+           :prepend t)
+          ("d" "deadline" entry (file+headline "todo.org" "Inbox")
+           "* [ ] %?\nDEADLINE: <%(org-read-date)>\n\n%i\n%a"
+           :prepend t)
+          ("s" "schedule" entry (file+headline "todo.org" "Inbox")
+           "* [ ] %?\nSCHEDULED: <%(org-read-date)>\n\n%i\n%a"
+           :prepend t)
+          ("c" "check out later" entry (file+headline "todo.org" "Check out later")
+           "* [ ] %?\n%i\n%a"
+           :prepend t)
+          ("l" "ledger" plain (file "ledger/personal.gpg")
+           "%(+beancount/clone-transaction)"))))

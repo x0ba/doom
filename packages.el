@@ -8,3 +8,4 @@
 (package! minions)
 
 (package! mixed-pitch)
+(package! mac-pseudo-daemon)
